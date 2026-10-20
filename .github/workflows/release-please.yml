@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Run Release Please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Generate AI release notes
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice::ANTHROPIC_API_KEY is not configured. Keeping the generated changelog."
+            exit 0
+          fi
+
+          TAG="${{ steps.release.outputs.tag_name }}"
+          echo "Generating the narrative for $TAG"
+
+          cat > notes-prompt.md <<'PROMPT'
+          You are a senior engineer writing the release notes for a software
+          release. Below is the auto-generated changelog, derived from
+          conventional commits.
+
+          Write a release narrative with exactly these sections:
+
+          ### Highlights
+          The two or three changes that actually matter, explained in user
+          terms. Explain the behaviour change, not the implementation.
+
+          ### Breaking changes
+          For each one: what breaks, who it affects, and the exact migration
+          step. If there are none, say "None".
+
+          ### Migrations
+          Any database, configuration or deployment migration required, with the
+          exact command. If there are none, say "None".
+
+          ### Upgrade notes
+          What the maintainer needs to know when upgrading. If there are none,
+          say "None".
+
+          Rules:
+          - Only describe changes that appear in the changelog. Never invent one.
+          - Be specific. "Improves stability" is not acceptable; say what was
+            fixed and what it did before.
+          - Use the project's language from the changelog.
+          - No preamble, no closing remarks, no emoji.
+
+          PROMPT
+
+          cat "$TAG"*.md >> notes-prompt.md 2>/dev/null || true
+          cat CHANGELOG.md >> notes-prompt.md 2>/dev/null || true
+
+          npx --yes @anthropic-ai/claude-code -p "$(cat notes-prompt.md)" \
+            --output-format text > release-notes.md 2>/dev/null || {
+              echo "::warning::The release notes generator failed. Keeping the generated changelog."
+              exit 0
+            }
+
+          test -s release-notes.md \
+            || { echo "::warning::Empty release notes. Keeping the generated changelog."; exit 0; }
+
+      - name: Attach the narrative to the release
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          if [ ! -s release-notes.md ]; then
+            echo "No narrative to attach."
+            exit 0
+          fi
+          {
+            echo "## Release narrative"
+            echo
+            cat release-notes.md
+            echo
+            echo "---"
+            echo
+            echo "### Changelog"
+            echo
+            cat CHANGELOG.md
+          } > full-notes.md
+          gh release edit "$TAG" --notes-file full-notes.md

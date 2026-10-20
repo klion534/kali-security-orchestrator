@@ -1,0 +1,66 @@
+# --- Secrets: never commit ---------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.yaml
+secrets.yml
+.secrets
+.aws/credentials
+.config/gh/hosts.yml
+
+# --- Agent worktrees -----------------------------------------------------
+.worktrees/
+
+# --- SDD working state ---------------------------------------------------
+# The baseline and the archive are tracked. In-flight changes are not:
+# they are work in progress, not history.
+.sdd/changes/
+
+# --- Node ----------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun.lockb
+.eslintcache
+coverage/
+dist/
+build/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# --- Python --------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- Go / Rust -----------------------------------------------------------
+/bin/
+/target/
+*.test
+
+# --- Editors and OS ------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*~
+.idea/
+
+# --- Tooling caches ------------------------------------------------------
+.atl/
+.gentle-ai/
+.opencode/cache/

@@ -1,0 +1,23 @@
+# Gentleman Guardian Angel — project configuration
+# Docs: https://github.com/Gentleman-Programming/gentleman-guardian-angel
+#
+# The rules file is AGENTS.md in the repository root. GGA reads it as the
+# standard that every staged change must satisfy.
+
+PROVIDER=opencode
+MODEL=
+
+# The file that holds the coding standards the reviewer enforces.
+RULES_FILE=AGENTS.md
+
+# Max characters of the diff sent to the reviewer.
+MAX_DIFF_CHARS=60000
+
+# Fail the commit when the reviewer reports blocking issues.
+BLOCK_ON_ERROR=true
+
+# Ignore files that rarely carry reviewable signal.
+EXCLUDE_PATTERNS=*.lock,package-lock.json,pnpm-lock.yaml,*.snap,dist/*,coverage/*,*.min.js,*.map
+
+# Cache reviewed content so unchanged files are not re-sent.
+CACHE_ENABLED=true

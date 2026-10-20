@@ -1,0 +1,124 @@
+name: Security Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: AI Security Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect the diff
+        id: diff
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          {
+            echo '```diff'
+            git diff --no-color \
+              "origin/${{ github.base_ref }}...${{ github.sha }}" \
+              -- . ':!*.lock' ':!package-lock.json'
+            echo '```'
+          } > pr-diff.txt
+          echo "chars=$(wc -c < pr-diff.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Guard against an empty diff
+        run: |
+          if [ "$(wc -c < pr-diff.txt)" -lt 20 ]; then
+            echo "No reviewable diff. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+        id: check
+
+      - name: Run the review
+        if: steps.check.outputs.skip != 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::warning::ANTHROPIC_API_KEY is not configured. Skipping the AI review."
+            echo "::notice::Add the secret in Settings > Secrets and variables > Actions."
+            exit 0
+          fi
+
+          cat > review-prompt.md <<'PROMPT'
+          You are a senior application security engineer reviewing a pull request.
+
+          Review the diff below strictly for security defects. For each finding
+          you MUST provide:
+          - The exact file and line, in the form path:line
+          - The class of vulnerability: injection | authentication | authorization
+            | secrets | data-exposure | dependency | infrastructure
+          - A concrete exploit path, including the actual attacker input
+          - The impact the attacker achieves
+          - A one-line fix
+          - A confidence level: confirmed | probable | needs-verification
+
+          Rules:
+          - Report only defects with a reachable attack path. A vulnerable
+            pattern in unreachable code is a note, not a finding.
+          - Do not report false positives. If the framework's default escaping
+            applies and there is no raw HTML sink, do not report XSS.
+          - Do not report the mere fact that a change touches auth or security.
+            Check whether it is correct.
+          - Report at most 10 findings, ordered by severity.
+          - If you find nothing, say so explicitly.
+
+          End your reply with a single line:
+          REVIEW_RESULT: PASS
+          or
+          REVIEW_RESULT: FINDINGS
+
+          PROMPT
+
+          cat pr-diff.txt >> review-prompt.md
+
+          npx --yes @anthropic-ai/claude-code -p "$(cat review-prompt.md)" \
+            --output-format text > review-output.txt 2>review-error.txt || {
+              echo "::warning::The reviewer CLI failed. Continuing without the AI review."
+              cat review-error.txt
+              exit 0
+            }
+
+      - name: Publish the review
+        if: steps.check.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f review-output.txt ] || [ ! -s review-output.txt ]; then
+            echo "No review output to publish."
+            exit 0
+          fi
+
+          {
+            echo "## AI Security Review"
+            echo
+            cat review-output.txt
+          } > review-comment.md
+
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body-file review-comment.md
+
+          if grep -q "REVIEW_RESULT: FINDINGS" review-output.txt; then
+            echo "::error::The security review reported findings. A human must review them before merging."
+            exit 1
+          fi
+          echo "Security review found no blocking issues."

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Project-level configuration. Deep-merged over the global config in
+  // ~/.config/opencode/opencode.jsonc.
+
+  "instructions": ["AGENTS.md"],
+
+  "permission": {
+    "read": {
+      // Same exception as below, for reads. The global deny-list protects
+      // real secrets; a committed template holds no real values.
+      "**/.env.example": "allow",
+      "**/.env.sample": "allow",
+      "**/.env.template": "allow"
+    },
+    "edit": {
+      // The global deny-list protects secrets. These two are the sanctioned
+      // exceptions: they are templates meant to be committed, and they hold
+      // no real values. The global rules come first, these come last, and
+      // opencode evaluates the last matching rule.
+      "**/.env.example": "allow",
+      "**/.env.sample": "allow",
+      "**/.env.template": "allow"
+    }
+  },
+
+  "worktree": {
+    "directory": ".worktrees"
+  }
+}

@@ -1,0 +1,12 @@
+# Default owners for everything in the repository.
+* @gentleman-programming
+
+# Documentation and the AI stack.
+/docs/      @gentleman-programming
+/AGENTS.md  @gentleman-programming
+
+# The SDD artifact store: the source of truth for the specs.
+/.sdd/      @gentleman-programming
+
+# The CI/CD pipeline: changes here affect every merge.
+/.github/workflows/ @gentleman-programming
