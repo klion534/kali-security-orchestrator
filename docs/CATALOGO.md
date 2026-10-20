@@ -147,6 +147,21 @@
 | `.env.example` | Contrato de variables de entorno |
 | `.gitignore` | `.env`, `.worktrees/`, artefactos |
 | `nvim/veil.lua` | Spec de LazyVim para veil.nvim |
+| `opencode.jsonc` | Config a nivel de proyecto (excepciones de la deny-list) |
+
+### Los tres gates de CI
+
+Los mismos scripts que ejecuta el CI, ejecutables en local. Si pasan local,
+el CI pasa: el gate es el mismo código.
+
+| Gate | Comando | Qué valida |
+|------|---------|-----------|
+| **lint** | `npm run lint` | JSON, JSONC, YAML, shell (`bash -n`) y frontmatter de skills. Patrones de credenciales. Ficheros obligatorios. |
+| **test** | `npm test` | Invariantes del store SDD: numeración estable de requisitos sin huecos, separación baseline/cambios, límite de 500 líneas del `AGENTS.md` |
+| **build** | `npm run build` | Regenera `docs/INDEX.md` desde los ficheros en disco, así que el índice no puede quedar desactualizado |
+
+Sin dependencias de runtime: solo `yaml` como devDependency para parsear
+YAML con un parser real en lugar de una heurística escrita a mano.
 
 ---
 
@@ -179,6 +194,11 @@ opencode debug config        # config resuelta
 engram --version
 gentle-ai --version
 gga version
+
+# Los tres gates de CI
+npm run lint
+npm test
+npm run build
 
 # El stack completo, en una pasada
 ./scripts/verify-stack.sh

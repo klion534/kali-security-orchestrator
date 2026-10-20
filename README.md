@@ -104,11 +104,17 @@ Cuatro puertas Human-in-the-Loop: **G1** alcance, **G2** diseño, **G3** plan,
 ## Verificación del stack
 
 ```bash
-./scripts/verify-stack.sh
+./scripts/verify-stack.sh    # 82 comprobaciones: binarios, agentes, skills,
+                             # comandos, MCPs, permisos, gates, workflows
 ```
 
-Comprueba binarios, agentes, skills, comandos, MCPs, permisos de secretos y
-validez de los workflows.
+Los tres gates de CI son ejecutables en local, y son el mismo código:
+
+```bash
+npm run lint     # valida JSON, JSONC, YAML, shell y frontmatter de skills
+npm test         # invariantes del store SDD
+npm run build    # regenera docs/INDEX.md
+```
 
 ---
 
@@ -118,6 +124,7 @@ validez de los workflows.
 .
 ├── AGENTS.md                   Reglas del proyecto (<500 líneas)
 ├── opencode.jsonc              Config a nivel de proyecto
+├── package.json                Los tres gates de CI
 ├── .sdd/                       Store de artefactos SDD
 ├── .github/
 │   ├── workflows/              ci.yml · security-review.yml · release-please.yml
@@ -125,8 +132,13 @@ validez de los workflows.
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── CODEOWNERS
 ├── docs/                       PLAYBOOK · ARQUITECTURA · CATALOGO · OPERATIVO
+│   └── INDEX.md                Generado por npm run build
 ├── nvim/veil.lua               Spec de LazyVim para veil.nvim
-├── scripts/verify-stack.sh
+├── scripts/
+│   ├── verify-stack.sh         Auditoría read-only del stack completo
+│   ├── validate-config.mjs     El gate de lint
+│   └── build-docs.mjs          El gate de build
+├── tests/sdd-store.test.mjs    El gate de test
 ├── release-please-config.json
 └── .release-please-manifest.json
 ```

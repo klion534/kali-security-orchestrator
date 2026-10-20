@@ -248,13 +248,37 @@ for wf in ci.yml security-review.yml release-please.yml; do
   fi
 done
 
-for f in ".github/dependabot.yml" ".github/PULL_REQUEST_TEMPLATE.md" ".github/CODEOWNERS" "release-please-config.json" ".release-please-manifest.json" ".gga" ".env.example" ".gitignore" "AGENTS.md" ".sdd/registry.md" "nvim/veil.lua"; do
+for f in ".github/dependabot.yml" ".github/PULL_REQUEST_TEMPLATE.md" ".github/CODEOWNERS" "release-please-config.json" ".release-please-manifest.json" ".gga" ".env.example" ".gitignore" "AGENTS.md" ".sdd/registry.md" "nvim/veil.lua" "package.json" "package-lock.json" "scripts/validate-config.mjs" "scripts/build-docs.mjs" "tests/sdd-store.test.mjs" "opencode.jsonc"; do
   if [ -f "$ROOT/$f" ]; then
     ok "$f"
   else
     bad "falta $f"
   fi
 done
+
+# ---------------------------------------------------------------------------
+section "9b. Gates de CI"
+
+if command -v npm >/dev/null 2>&1 && [ -f "$ROOT/package.json" ]; then
+  cd "$ROOT" || exit 1
+  if npm run lint --silent >/dev/null 2>&1; then
+    ok "npm run lint"
+  else
+    bad "npm run lint falla"
+  fi
+  if npm test --silent >/dev/null 2>&1; then
+    ok "npm test"
+  else
+    bad "npm test falla"
+  fi
+  if npm run build --silent >/dev/null 2>&1; then
+    ok "npm run build"
+  else
+    bad "npm run build falla"
+  fi
+else
+  warn "npm no está disponible: los gates de CI no se pudieron verificar"
+fi
 
 # ---------------------------------------------------------------------------
 section "10. Memoria persistente (Engram)"
