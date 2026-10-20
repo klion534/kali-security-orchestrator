@@ -11,12 +11,20 @@
 # Verificar que todo está en su lugar
 ./scripts/verify-stack.sh
 
+# Los tres gates de CI, en local
+npm run lint     # valida JSON, JSONC, YAML, shell y frontmatter
+npm test         # invariantes del store SDD
+npm run build    # regenera docs/INDEX.md
+
 # Estado de memoria persistente
 engram doctor
 
 # Diagnóstico del stack gestionado
 gentle-ai doctor
 ```
+
+Los tres scripts de `package.json` son los mismos que ejecuta el CI. Si pasan
+en local, el CI pasa. No hay mystery: el gate es el mismo código.
 
 Si algo falla, el script dice exactamente qué. Los binarios van en
 `/usr/local/bin`; si no están, re-exportalos:

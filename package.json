@@ -1,0 +1,27 @@
+{
+  "name": "cognitive-ai-stack",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema Cognitivo de Desarrollo con IA: agentes, skills, comandos y gates de produccion.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lint": "node scripts/validate-config.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build-docs.mjs",
+    "verify": "./scripts/verify-stack.sh"
+  },
+  "keywords": [
+    "ai",
+    "sdd",
+    "spec-driven-development",
+    "agents",
+    "opencode"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "yaml": "^2.9.1"
+  }
+}
