@@ -165,3 +165,9 @@ herramientas externas instaladas.
   valida el alcance, perfil y catálogo, y siempre devuelve `dry_run: true`.
 - La CLI todavía no ejecuta comandos externos; esa capacidad pertenece a T4 y
   requiere runner, timeouts, cancelación y redacción.
+
+### L8 — Guía de uso
+
+- `docs/GUIA-USO-KALI.md` documenta instalación en VirtualBox, entorno Python,
+  diagnóstico, planificación segura, perfiles, limitaciones y resolución de
+  problemas.

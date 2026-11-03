@@ -7,5 +7,6 @@
 |-----------|-----------|
 | [Arquitectura del Stack Cognitivo](ARQUITECTURA-STACK.md) | Cómo está montado el sistema, qué capa hace qué, y por qué está así. |
 | [Catálogo del Stack](CATALOGO.md) | Inventario completo de lo instalado: agentes, skills, comandos, MCPs, binarios |
+| [Guía de uso en Kali Linux sobre VirtualBox](GUIA-USO-KALI.md) | La versión actual permite: |
 | [Manual Operativo](OPERATIVO.md) | Cómo se usa el stack en el día a día. Sin teoría: qué se tipea, qué pasa, qué |
 | [Playbook — Desarrollo con IA: De 0 a Producción](PLAYBOOK-CURSO-IA.md) | **Nota operativa:** este documento conserva material histórico y formativo |

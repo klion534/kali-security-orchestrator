@@ -31,6 +31,7 @@ El humano valida la intención. La IA produce el artefacto derivado.
 | **[ARQUITECTURA-STACK.md](docs/ARQUITECTURA-STACK.md)** | Las capas, el DAG, los permisos, los gates |
 | **[CATALOGO.md](docs/CATALOGO.md)** | Inventario de todo lo instalado |
 | **[OPERATIVO.md](docs/OPERATIVO.md)** | El manual de día a día |
+| **[GUIA-USO-KALI.md](docs/GUIA-USO-KALI.md)** | Uso en Kali Linux dentro de VirtualBox |
 
 ---
 
