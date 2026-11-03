@@ -7,6 +7,8 @@ from .config import ConfigError, load_config
 from .adapters import AdapterError, build_default_adapters
 from .policy import ExecutionPolicy
 from .runner import RunnerError, ToolRunner
+from .evidence import EvidenceStore, parse_findings
+from .reports import build_report, write_reports
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -111,5 +113,18 @@ def _run(args) -> int:
         dry_run=False,
         timeout=args.timeout,
     )
-    print(json.dumps(result.as_dict(), indent=2))
+    findings = parse_findings(args.tool, args.target, result.stdout)
+    evidence = result.as_dict() | {"findings": [finding.as_dict() for finding in findings]}
+    evidence_path = EvidenceStore(config.output_dir).write_run(evidence)
+    report_paths = write_reports(config.output_dir, build_report(result.as_dict(), findings))
+    print(
+        json.dumps(
+            {
+                "result": result.as_dict(),
+                "evidence": str(evidence_path),
+                "reports": {name: str(path) for name, path in report_paths.items()},
+            },
+            indent=2,
+        )
+    )
     return 0 if result.status == "completed" else 1

@@ -238,8 +238,9 @@ Después cerrá la sesión de Kali y volvé a entrar.
 Es un diagnóstico, no un error del orquestador. Instalá la herramienta dentro
 de Kali siguiendo su documentación oficial y ejecutá nuevamente `doctor`.
 
-## Próxima capacidad
+## Estado pendiente
 
-El siguiente componente será el runner aislado. Recién después de implementar
-timeouts, cancelación, redacción y captura de evidencias se habilitará la
-ejecución de herramientas externas.
+El núcleo del runner, los adaptadores iniciales, la normalización de evidencias
+y los informes ya están implementados. Falta validar los binarios y sus formatos
+de salida dentro de Kali Linux en VirtualBox; esa verificación no se realiza en
+macOS ni contra objetivos reales desde los tests.

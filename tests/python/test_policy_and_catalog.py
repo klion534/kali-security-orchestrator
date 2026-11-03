@@ -12,6 +12,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from kali_orchestrator.catalog import build_default_catalog
 from kali_orchestrator.config import ConfigError, load_config
 from kali_orchestrator.adapters import AdapterError, build_default_adapters
+from kali_orchestrator.evidence import EvidenceStore, parse_findings
+from kali_orchestrator.reports import build_report, write_reports
 from kali_orchestrator.policy import AuthorizationError, ExecutionPolicy, TargetScope
 from kali_orchestrator.runner import RunnerError, ToolRunner
 
@@ -238,6 +240,65 @@ class AdapterTests(unittest.TestCase):
     def test_burp_is_explicitly_manual(self):
         with self.assertRaises(AdapterError):
             build_default_adapters().get("burp-suite").build("example.test", "artifacts")
+
+
+class EvidenceTests(unittest.TestCase):
+    def test_ignores_non_json_output_without_fabricating_findings(self):
+        self.assertEqual(parse_findings("nmap", "example.test", "plain scanner output"), [])
+
+    def test_parses_nuclei_jsonl_and_redacts_secret(self):
+        output = json.dumps(
+            {
+                "template-id": "exposed-panel",
+                "info": {"name": "Exposed panel", "severity": "medium", "reference": ["https://example.test/ref"]},
+                "matched-at": "https://example.test/admin",
+                "extracted-results": ["token=secret-value"],
+            }
+        )
+
+        findings = parse_findings("nuclei", "https://example.test", output)
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].severity, "medium")
+        self.assertIn("[REDACTED]", findings[0].evidence)
+        self.assertNotIn("secret-value", findings[0].evidence)
+
+    def test_evidence_store_writes_json_without_secret(self):
+        with TemporaryDirectory() as directory:
+            store = EvidenceStore(directory)
+            path = store.write_run(
+                {
+                    "tool": "nuclei",
+                    "stdout": "token=secret-value",
+                    "findings": [],
+                }
+            )
+            saved = json.loads(path.read_text())
+
+        self.assertIn("[REDACTED]", saved["stdout"])
+        self.assertNotIn("secret-value", json.dumps(saved))
+
+
+class ReportTests(unittest.TestCase):
+    def test_reports_include_findings_in_json_markdown_html_and_sarif(self):
+        findings = parse_findings(
+            "nuclei",
+            "https://example.test",
+            json.dumps({"template-id": "panel", "info": {"name": "Panel", "severity": "high"}}),
+        )
+        run = {"tool": "nuclei", "status": "completed", "stdout": "token=secret-value"}
+
+        with TemporaryDirectory() as directory:
+            report = build_report(run, findings)
+            paths = write_reports(directory, report)
+            contents = {name: path.read_text() for name, path in paths.items()}
+
+        self.assertEqual(report["summary"]["total_findings"], 1)
+        self.assertEqual(report["coverage"][0]["status"], "verified")
+        self.assertIn("Panel", contents["markdown"])
+        self.assertIn("Panel", contents["html"])
+        self.assertIn("sarif", contents["sarif"])
+        self.assertNotIn("secret-value", json.dumps(report))
 
 
 if __name__ == "__main__":

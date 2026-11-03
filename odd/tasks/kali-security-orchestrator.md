@@ -95,10 +95,10 @@ herramientas externas instaladas.
 - [x] T3 — Implementar CLI, configuración validada y políticas de seguridad.
 - [x] T4 — Implementar runner aislado con timeouts, cancelación y redacción.
 - [x] T5 — Implementar catálogo y adaptadores de la primera cobertura.
-- [ ] T6 — Implementar parsers, normalización y almacenamiento de evidencias.
-- [ ] T7 — Implementar generadores Markdown, HTML, JSON y SARIF.
-- [ ] T8 — Añadir tests unitarios, integración con mocks y documentación de uso.
-- [ ] T9 — Ejecutar verificación completa y cerrar riesgos pendientes.
+- [x] T6 — Implementar parsers, normalización y almacenamiento de evidencias.
+- [x] T7 — Implementar generadores Markdown, HTML, JSON y SARIF.
+- [x] T8 — Añadir tests unitarios, integración con mocks y documentación de uso.
+- [ ] T9 — Ejecutar verificación completa en Kali y cerrar riesgos pendientes.
 
 ## Log
 
@@ -191,3 +191,22 @@ herramientas externas instaladas.
 - Los adaptadores solo construyen argv; la validación final y ejecución pasan por
   el runner.
 - La validación en la VM Kali y la ampliación de cobertura siguen pendientes.
+
+### L11 — Evidencias e informes
+
+- `src/kali_orchestrator/evidence.py` normaliza salidas JSON/JSONL de Nuclei,
+  Gitleaks y Trivy, conserva un modelo común de findings y escribe evidencias
+  JSON con permisos restrictivos y redacción recursiva.
+- `src/kali_orchestrator/reports.py` genera un único modelo de informe en JSON,
+  Markdown, HTML y SARIF; todos los formatos se sanitizan antes de escribirse.
+- La CLI `run` integra ejecución, parsing, almacenamiento de evidencia y
+  generación de informes en `output_dir`.
+- Se añadieron pruebas para redacción, almacenamiento, formatos, salida no JSON,
+  timeout, autorización, adaptadores y ejecutables simulados.
+- La verificación real de binarios y sus formatos queda pendiente de T9 en Kali.
+
+### L12 — Estado de cierre local
+
+- `npm test`: 6 tests Node y 19 tests Python pasaron.
+- `npm run lint`, `npm run build` y `git diff --check` deben ejecutarse como
+  evidencia final antes de marcar T9.
