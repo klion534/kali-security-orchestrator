@@ -93,7 +93,7 @@ herramientas externas instaladas.
 - [x] T1 — Explorar el entorno Kali esperado y fijar contratos CLI, configuración y salida.
 - [x] T2 — Diseñar el modelo de catálogo, perfiles, alcance, ejecución y evidencia.
 - [x] T3 — Implementar CLI, configuración validada y políticas de seguridad.
-- [ ] T4 — Implementar runner aislado con timeouts, cancelación y redacción.
+- [x] T4 — Implementar runner aislado con timeouts, cancelación y redacción.
 - [ ] T5 — Implementar catálogo y adaptadores de la primera cobertura.
 - [ ] T6 — Implementar parsers, normalización y almacenamiento de evidencias.
 - [ ] T7 — Implementar generadores Markdown, HTML, JSON y SARIF.
@@ -163,11 +163,21 @@ herramientas externas instaladas.
   herramientas de auditoría.
 - `python3 -m kali_orchestrator plan --config examples/audit.safe-web.json`
   valida el alcance, perfil y catálogo, y siempre devuelve `dry_run: true`.
-- La CLI todavía no ejecuta comandos externos; esa capacidad pertenece a T4 y
-  requiere runner, timeouts, cancelación y redacción.
+- El comando `plan` nunca ejecuta comandos externos; la ejecución explícita
+  requiere el runner de T4, autorización y un comando de adaptador válido.
 
 ### L8 — Guía de uso
 
 - `docs/GUIA-USO-KALI.md` documenta instalación en VirtualBox, entorno Python,
   diagnóstico, planificación segura, perfiles, limitaciones y resolución de
   problemas.
+
+### L9 — Runner seguro
+
+- `src/kali_orchestrator/runner.py` ejecuta argv sin shell, valida herramienta y
+  perfil, exige autorización explícita para ejecución real, aplica timeout,
+  termina procesos en timeout/cancelación y redacta secretos en la evidencia.
+- Los tests usan el intérprete Python como ejecutable simulado; no lanzan
+  herramientas de seguridad ni objetivos reales.
+- La construcción de comandos específicos por herramienta queda en T5; el
+  runner no inventa argumentos ni añade objetivos silenciosamente.

@@ -57,8 +57,10 @@ def load_config(path: str | Path, catalog: ToolCatalog | None = None) -> AuditCo
         raise ConfigError("authorized must be a boolean")
 
     dry_run = data.get("dry_run", True)
-    if dry_run is not True:
-        raise ConfigError("dry_run must remain true until the execution runner is implemented")
+    if not isinstance(dry_run, bool):
+        raise ConfigError("dry_run must be a boolean")
+    if dry_run is False and not authorized:
+        raise ConfigError("dry_run=false requires explicit authorization")
 
     selected_catalog = catalog or build_default_catalog()
     unknown = sorted(set(tools) - selected_catalog.names())

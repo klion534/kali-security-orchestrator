@@ -9,9 +9,13 @@ La versión actual permite:
 - Clasificar el perfil de ejecución.
 - Detectar herramientas instaladas.
 - Generar un plan en modo `dry_run`.
+- Ejecutar un proceso registrado mediante un runner aislado, con autorización
+  explícita, timeout y redacción.
 
-Todavía no ejecuta Nmap, Nuclei, OWASP ZAP, Burp Suite, SQLMap ni otras
-herramientas externas. Esa capacidad se implementará después del runner seguro.
+Todavía no existen los adaptadores específicos que construyen correctamente los
+argumentos de Nmap, Nuclei, OWASP ZAP, Burp Suite, SQLMap ni otras herramientas.
+El runner genérico no debe usarse con herramientas reales hasta completar esos
+adaptadores.
 
 ## 1. Preparar la máquina virtual
 
@@ -166,11 +170,38 @@ La CLI actual rechaza:
 | `code` | Código, secretos y dependencias | Planificación |
 | `cloud` | Cloud y Kubernetes | Planificación |
 | `mobile` | Aplicaciones móviles | Planificación |
-| `active` | Pruebas activas | Bloqueado sin autorización explícita |
-| `lab` | Herramientas de laboratorio | Bloqueado sin autorización explícita |
-| `full` | Cobertura combinada | Bloqueado sin autorización explícita |
+| `active` | Pruebas activas | Requiere autorización explícita |
+| `lab` | Herramientas de laboratorio | Requiere autorización explícita |
+| `full` | Cobertura combinada | Requiere autorización explícita |
 
-## 7. Reglas de seguridad
+## 7. Runner experimental
+
+El runner de T4 ya aplica autorización, `shell=False`, timeout, cancelación y
+redacción. La ejecución real requiere una configuración con:
+
+```json
+{
+  "profile": "safe-web",
+  "authorized": true,
+  "dry_run": false
+}
+```
+
+La invocación exige confirmación explícita:
+
+```bash
+PYTHONPATH=src python3 -m kali_orchestrator run \
+  --config /ruta/al/plan-autorizado.json \
+  --tool nmap \
+  --target https://app.example.com \
+  --execute
+```
+
+No uses aún este comando con herramientas reales: los adaptadores específicos
+de cada herramienta se implementan en la siguiente tarea. El runner no añade
+el objetivo automáticamente ni inventa argumentos.
+
+## 8. Reglas de seguridad
 
 - Trabajá únicamente sobre sistemas propios o autorizados.
 - No uses producción para las primeras pruebas.
@@ -181,7 +212,7 @@ La CLI actual rechaza:
   el objetivo esté auditado; solo indica que el binario no fue encontrado.
 - La página de éxito de un pago nunca debe tratarse como evidencia de pago.
 
-## 8. Problemas frecuentes
+## 9. Problemas frecuentes
 
 ### `ModuleNotFoundError: kali_orchestrator`
 

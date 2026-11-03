@@ -2,6 +2,7 @@ import sys
 import json
 import subprocess
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -11,6 +12,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from kali_orchestrator.catalog import build_default_catalog
 from kali_orchestrator.config import ConfigError, load_config
 from kali_orchestrator.policy import AuthorizationError, ExecutionPolicy, TargetScope
+from kali_orchestrator.runner import RunnerError, ToolRunner
 
 
 class TargetScopeTests(unittest.TestCase):
@@ -104,6 +106,27 @@ class ConfigAndCliTests(unittest.TestCase):
             with self.assertRaises(ConfigError):
                 load_config(path)
 
+    def test_accepts_real_execution_plan_only_with_authorization(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "audit.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "scope": {"domains": ["example.test"]},
+                        "profile": "safe-web",
+                        "authorized": True,
+                        "dry_run": False,
+                        "targets": ["example.test"],
+                        "tools": ["nmap"],
+                    }
+                )
+            )
+
+            config = load_config(path)
+
+        self.assertFalse(config.dry_run)
+        self.assertTrue(config.authorized)
+
     def test_cli_plan_is_dry_and_reports_tool_status(self):
         with TemporaryDirectory() as directory:
             path = Path(directory) / "audit.json"
@@ -131,6 +154,75 @@ class ConfigAndCliTests(unittest.TestCase):
         self.assertTrue(plan["dry_run"])
         self.assertEqual(plan["targets"], ["example.test"])
         self.assertEqual(plan["tools"][0]["name"], "nmap")
+
+
+class RunnerTests(unittest.TestCase):
+    def setUp(self):
+        catalog = build_default_catalog()
+        catalog.register(
+            replace(
+                catalog.get("nmap"),
+                name="fake-tool",
+                binary=sys.executable,
+                profiles=("safe-web",),
+            )
+        )
+        self.catalog = catalog
+        self.scope = TargetScope.from_values(domains=["example.test"])
+
+    def test_dry_run_never_executes_command(self):
+        policy = ExecutionPolicy(scope=self.scope, authorized=False)
+        result = ToolRunner(self.catalog).run(
+            "fake-tool",
+            profile="safe-web",
+            target="example.test",
+            args=["-c", "raise SystemExit(99)"],
+            policy=policy,
+            dry_run=True,
+        )
+
+        self.assertEqual(result.status, "planned")
+        self.assertEqual(result.returncode, None)
+        self.assertEqual(result.stdout, "")
+
+    def test_execution_requires_authorization_and_redacts_output(self):
+        with self.assertRaises(RunnerError):
+            ToolRunner(self.catalog).run(
+                "fake-tool",
+                profile="safe-web",
+                target="example.test",
+                args=["-c", "print('Authorization: Bearer secret-token')"],
+                policy=ExecutionPolicy(scope=self.scope, authorized=False),
+                dry_run=False,
+            )
+
+        result = ToolRunner(self.catalog).run(
+            "fake-tool",
+            profile="safe-web",
+            target="example.test",
+            args=["-c", "print('Authorization: Bearer secret-token')"],
+            policy=ExecutionPolicy(scope=self.scope, authorized=True),
+            dry_run=False,
+        )
+
+        self.assertEqual(result.status, "completed")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("[REDACTED]", result.stdout)
+        self.assertNotIn("secret-token", result.stdout)
+
+    def test_timeout_is_reported(self):
+        result = ToolRunner(self.catalog).run(
+            "fake-tool",
+            profile="safe-web",
+            target="example.test",
+            args=["-c", "import time; time.sleep(1)"],
+            policy=ExecutionPolicy(scope=self.scope, authorized=True),
+            dry_run=False,
+            timeout=0.01,
+        )
+
+        self.assertEqual(result.status, "timeout")
+        self.assertIsNone(result.returncode)
 
 
 if __name__ == "__main__":
