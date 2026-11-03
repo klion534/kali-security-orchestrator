@@ -90,7 +90,7 @@ npm run build
 No continúes si los tests fallan. Un resultado esperado actualmente es:
 
 ```text
-6 tests Node + 9 tests Python: OK
+6 tests Node + 19 tests Python: OK
 lint: ... no problems found
 Stack completo y sano.
 ```
