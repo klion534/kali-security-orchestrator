@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from kali_orchestrator.catalog import build_default_catalog
 from kali_orchestrator.config import ConfigError, load_config
+from kali_orchestrator.adapters import AdapterError, build_default_adapters
 from kali_orchestrator.policy import AuthorizationError, ExecutionPolicy, TargetScope
 from kali_orchestrator.runner import RunnerError, ToolRunner
 
@@ -223,6 +224,20 @@ class RunnerTests(unittest.TestCase):
 
         self.assertEqual(result.status, "timeout")
         self.assertIsNone(result.returncode)
+
+
+class AdapterTests(unittest.TestCase):
+    def test_initial_adapters_build_targeted_commands(self):
+        adapters = build_default_adapters()
+
+        for name in ("nmap", "nuclei", "owasp-zap", "sqlmap", "gitleaks", "trufflehog", "trivy"):
+            plan = adapters.get(name).build("example.test", "artifacts")
+            self.assertIn("example.test", plan.args, name)
+            self.assertFalse(plan.manual, name)
+
+    def test_burp_is_explicitly_manual(self):
+        with self.assertRaises(AdapterError):
+            build_default_adapters().get("burp-suite").build("example.test", "artifacts")
 
 
 if __name__ == "__main__":

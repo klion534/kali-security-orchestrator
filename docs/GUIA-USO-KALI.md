@@ -9,13 +9,12 @@ La versión actual permite:
 - Clasificar el perfil de ejecución.
 - Detectar herramientas instaladas.
 - Generar un plan en modo `dry_run`.
-- Ejecutar un proceso registrado mediante un runner aislado, con autorización
+- Ejecutar adaptadores iniciales mediante un runner aislado, con autorización
   explícita, timeout y redacción.
 
-Todavía no existen los adaptadores específicos que construyen correctamente los
-argumentos de Nmap, Nuclei, OWASP ZAP, Burp Suite, SQLMap ni otras herramientas.
-El runner genérico no debe usarse con herramientas reales hasta completar esos
-adaptadores.
+Los adaptadores iniciales cubren Nmap, Nuclei, OWASP ZAP, SQLMap, Gitleaks,
+TruffleHog y Trivy. Burp Suite queda como integración manual/API. Deben
+validarse en Kali antes de considerarlos aptos para una auditoría real.
 
 ## 1. Preparar la máquina virtual
 
@@ -197,9 +196,9 @@ PYTHONPATH=src python3 -m kali_orchestrator run \
   --execute
 ```
 
-No uses aún este comando con herramientas reales: los adaptadores específicos
-de cada herramienta se implementan en la siguiente tarea. El runner no añade
-el objetivo automáticamente ni inventa argumentos.
+Usalo únicamente en Kali, con un objetivo autorizado. El runner no ejecuta
+mediante shell y no inventa argumentos; el adaptador construye los argumentos
+base y `--arg` permite añadir argumentos explícitos.
 
 ## 8. Reglas de seguridad
 

@@ -94,7 +94,7 @@ herramientas externas instaladas.
 - [x] T2 — Diseñar el modelo de catálogo, perfiles, alcance, ejecución y evidencia.
 - [x] T3 — Implementar CLI, configuración validada y políticas de seguridad.
 - [x] T4 — Implementar runner aislado con timeouts, cancelación y redacción.
-- [ ] T5 — Implementar catálogo y adaptadores de la primera cobertura.
+- [x] T5 — Implementar catálogo y adaptadores de la primera cobertura.
 - [ ] T6 — Implementar parsers, normalización y almacenamiento de evidencias.
 - [ ] T7 — Implementar generadores Markdown, HTML, JSON y SARIF.
 - [ ] T8 — Añadir tests unitarios, integración con mocks y documentación de uso.
@@ -181,3 +181,13 @@ herramientas externas instaladas.
   herramientas de seguridad ni objetivos reales.
 - La construcción de comandos específicos por herramienta queda en T5; el
   runner no inventa argumentos ni añade objetivos silenciosamente.
+
+### L10 — Adaptadores iniciales
+
+- Se implementaron adaptadores de comando para Nmap, Nuclei, OWASP ZAP, SQLMap,
+  Gitleaks, TruffleHog y Trivy.
+- Burp Suite queda explícitamente como integración manual/API; no se simula una
+  automatización que la edición instalada no garantice.
+- Los adaptadores solo construyen argv; la validación final y ejecución pasan por
+  el runner.
+- La validación en la VM Kali y la ampliación de cobertura siguen pendientes.

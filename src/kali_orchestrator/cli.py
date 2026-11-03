@@ -4,6 +4,7 @@ import sys
 
 from .catalog import build_default_catalog
 from .config import ConfigError, load_config
+from .adapters import AdapterError, build_default_adapters
 from .policy import ExecutionPolicy
 from .runner import RunnerError, ToolRunner
 
@@ -35,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return args.handler(args)
-    except (ConfigError, RunnerError) as error:
+    except (AdapterError, ConfigError, RunnerError) as error:
         print(f"configuration error: {error}", file=sys.stderr)
         return 2
 
@@ -100,11 +101,12 @@ def _run(args) -> int:
     if args.tool not in config.tools:
         raise RunnerError("tool is not listed in the configuration")
 
+    command_plan = build_default_adapters().get(args.tool).build(args.target, config.output_dir)
     result = ToolRunner(build_default_catalog()).run(
         args.tool,
         profile=config.profile,
         target=args.target,
-        args=args.arg,
+        args=[*command_plan.args, *args.arg],
         policy=ExecutionPolicy(scope=config.scope, authorized=config.authorized),
         dry_run=False,
         timeout=args.timeout,
