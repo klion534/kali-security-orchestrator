@@ -13,7 +13,7 @@
 
 # Los tres gates de CI, en local
 npm run lint     # valida JSON, JSONC, YAML, shell y frontmatter
-npm test         # invariantes del store SDD
+npm test         # invariantes de los documentos ODD
 npm run build    # regenera docs/INDEX.md
 
 # Estado de memoria persistente
@@ -55,52 +55,44 @@ Sin pipeline. Sin ceremonia. El AGENTS.md lo dice explícitamente.
 
 ```
 opencode
-> /sdd Implementar la política de reembolso de 30 días
+> Implementar la política de reembolso de 30 días
 ```
 
-El orquestador arranca, y se detiene en la **G1** (alcance). Revisás, aprobás,
-sigue.
+El orquestador explora primero y crea `odd/tasks/checkout-refund-policy.md`
+antes del primer cambio sustancial. Revisás la intención y el alcance, y luego
+avanza tarea por tarea con evidencia.
 
 ### 2.3 Cambio en curso
 
 ```
 opencode
-> /sdd Continuar el cambio checkout-refund-policy
+> Continuar checkout-refund-policy
 ```
 
-El orquestador lee `.sdd/registry.md` y retoma desde la primera fase
-incompleta. No reinicia.
+El orquestador lee `odd/tasks/checkout-refund-policy.md`, reconcilia el estado
+real del repositorio y retoma desde la primera tarea incompleta. No reinicia.
 
-### 2.4 Fast-forward (ya sabés lo que querés)
+### 2.4 Trabajo pequeño (ya sabés lo que querés)
 
 ```
 opencode
-> /sdd-ff checkout-refund-policy
+> Corregí el typo en el README
 ```
 
-Ejecuta todas las fases restantes sin detenerse en las puertas. Para cuando ya
-aprobaste el alcance y querés velocidad.
+No crea un documento durable cuando el cambio es entendido, de riesgo contenido
+y puede reanudarse desde la solicitud y el diff.
 
 ---
 
 ## 3. Los comandos, uno por uno
 
-### `/sdd` — el pipeline completo
+### ODD — workflow predeterminado
 
-Detiene en G1, G2, G3, G4. En cada puerta te muestra el artefacto y espera.
+ODD autoriza, explora, clasifica, registra el trabajo sustancial, implementa y
+comprueba. El documento de feature es `odd/tasks/<feature-name>.md`.
 
-**Si pediste algo que no es sustancial**, el orquestador te lo dice y lo hace
-inline. No nine fases para tres líneas.
-
-### `/sdd-new` — alta de cambio
-
-Solo `explore` + `propose`, y para en G1. Es el punto de entrada cuando todavía
-no estás seguro de si el cambio merece un pipeline.
-
-### `/sdd-ff` — fast-forward
-
-Todas las fases, sin paradas. Reporta estado por fase, artefactos, salida real
-de tests y matriz de cumplimiento al final.
+No es una fase adicional ni un comando nuevo: es el comportamiento operativo
+definido por `AGENTS.md` y `odd/README.md`.
 
 ### `/prompt` — el prompt de cinco ejes
 
@@ -196,7 +188,7 @@ directamente cuando querés **una opinión específica** sin el pipeline:
 
 | Comando | Para qué |
 |---------|----------|
-| `@sdd-explore` | Mapa rápido del codebase, read-only |
+| `@gentle-ai-explore` | Mapa rápido del codebase, read-only |
 | `@prompt-engineer` | Construir el prompt de cinco ejes |
 | `@context-engineer` | Auditoría de presupuesto de contexto |
 | `@model-selector` | Recomendación de modelo con coste |
@@ -216,7 +208,7 @@ que invocarlas. Si querés forzar una:
 
 | Skill | Cuándo la vas a necesitar |
 |-------|---------------------------|
-| `sdd-workflow` | Cada vez que corras el pipeline |
+| `cognitive-doc-design` | Cuando redactes o revises documentos para reducir carga cognitiva |
 | `prompt-perfect` | Antes de delegar algo no trivial |
 | `context-engineering` | Cuando la sesión pierde el hilo |
 | `model-selection` | Cuando el coste o la privacidad pesan |
@@ -369,7 +361,7 @@ Todo lo de arriba existe para sostener esa frase:
 - Los **agentes** hacen el trabajo pesado, en contextos frescos y aislados.
 - Las **skills** cargan el conocimiento justo cuando hace falta.
 - **Engram** evita que la amnesia te obligue a re-explicar decisiones.
-- El **SDD** convierte la intención en un contrato verificable.
+- **ODD** mantiene la intención, el progreso y la evidencia en un documento recuperable por feature.
 - El **CI/CD** y los **gates** impiden que lo no verificado llegue a
   producción.
 - El **HITL** te devuelve la decisión donde tiene que estar: en tu cabeza.

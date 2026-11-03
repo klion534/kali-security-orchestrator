@@ -7,19 +7,14 @@
 
 ## 1. Subagentes (18)
 
-### Pipeline SDD (9)
+### Orquestación ODD
 
 | Agente | Modo | Permisos | Qué hace | Artefacto |
 |--------|------|----------|----------|-----------|
-| `sdd-orchestrator` | primary | `edit: deny`, `task: sdd-*` | Coordina el pipeline. No escribe código. | — |
-| `sdd-explore` | subagent | read-only | Mapea el codebase: `path:line` como evidencia | informe |
-| `sdd-propose` | subagent | escribe | Intención, alcance, no-objetivos, rollback | `proposal.md` |
-| `sdd-spec` | subagent | escribe | Requisitos `R1..Rn` con Given/When/Then | `spec.md` |
-| `sdd-design` | subagent | escribe | Arquitectura, ADRs, migraciones, observabilidad | `design.md` |
-| `sdd-tasks` | subagent | escribe | Checklist numerado, por fases, con tests | `tasks.md` |
-| `sdd-apply` | subagent | escribe | TDD: RED → GREEN → REFACTOR | código + tests |
-| `sdd-verify` | subagent | `edit: deny` | Ejecuta tests reales, matriz de cumplimiento | `verification.md` |
-| `sdd-archive` | subagent | escribe | Merge del delta al baseline, cierre | baseline + archivo |
+| `gentle-orchestrator` | primary | según ODD | Autoriza, explora, clasifica y coordina el trabajo proporcional | `odd/tasks/<name>.md` |
+| `gentle-ai-explore` | subagent | read-only | Mapea el codebase y aporta evidencia `path:line` | log de la feature |
+| `gentle-ai-worker` | subagent | según tarea | Implementa una tarea autorizada y ejecuta sus comprobaciones | código + tests |
+| `gentle-ai-verify` | subagent | read-only | Comprueba la feature contra sus specs y evidencia | log de la feature |
 
 ### Especialistas del curso (9)
 
@@ -60,7 +55,7 @@
 
 | Skill | Trigger | Contenido |
 |-------|---------|-----------|
-| `sdd-workflow` | SDD, especificación, propuesta, `/sdd` | Store de artefactos, contratos de fase, modos SDD, protocolo de contexto, reglas duras |
+| `cognitive-doc-design` | documentación, guías, arquitectura | Diseña documentos legibles y verificables |
 | `prompt-perfect` | prompt engineering, cinco ejes, construir prompt | Los cinco ejes, prompt malo vs. bueno, procedimiento, anti-patrones |
 | `context-engineering` | ventana de contexto, tokens, compresión | Presupuesto por clases, 4 técnicas, recuperación, anti-patrones |
 | `model-selection` | elegir modelo, local vs cloud, coste | Dos ecosistemas, procedimiento, tabla de routing, anti-patrones |
@@ -81,13 +76,10 @@
 
 ---
 
-## 3. Comandos slash (14)
+## 3. Comandos slash
 
 | Comando | Agente | Qué hace |
 |---------|--------|----------|
-| `/sdd` | `sdd-orchestrator` | Pipeline completo con las 4 puertas HITL |
-| `/sdd-new` | `sdd-orchestrator` | Alta de cambio: explore + propose, para en G1 |
-| `/sdd-ff` | `sdd-orchestrator` | Fast-forward: todas las fases sin detenerse |
 | `/prompt` | `prompt-engineer` | Prompt de cinco ejes + diagnóstico |
 | `/model` | `model-selector` | Recomendación de modelo con coste y privacidad |
 | `/test-plan` | `test-engineer` | Estrategia de tests por riesgo |
@@ -157,7 +149,7 @@ el CI pasa: el gate es el mismo código.
 | Gate | Comando | Qué valida |
 |------|---------|-----------|
 | **lint** | `npm run lint` | JSON, JSONC, YAML, shell (`bash -n`) y frontmatter de skills. Patrones de credenciales. Ficheros obligatorios. |
-| **test** | `npm test` | Invariantes del store SDD: numeración estable de requisitos sin huecos, separación baseline/cambios, límite de 500 líneas del `AGENTS.md` |
+| **test** | `npm test` | Invariantes de documentos ODD, especificaciones sin huecos y límite de 500 líneas de `AGENTS.md` |
 | **build** | `npm run build` | Regenera `docs/INDEX.md` desde los ficheros en disco, así que el índice no puede quedar desactualizado |
 
 Sin dependencias de runtime: solo `yaml` como devDependency para parsear
@@ -165,19 +157,12 @@ YAML con un parser real en lugar de una heurística escrita a mano.
 
 ---
 
-## 7. Store de artefactos SDD
+## 7. Documentos de features ODD
 
 ```
-.sdd/
-├── registry.md              # índice de cambios y fase actual
-├── specs/                   # baseline mergeado (numeración estable)
-├── changes/<change-name>/
-│   ├── proposal.md
-│   ├── spec.md
-│   ├── design.md
-│   ├── tasks.md
-│   └── verification.md
-└── archive/<change-name>/
+odd/
+├── README.md
+└── tasks/<feature-name>.md  # Specs, Tasks, Log y evidencia
 ```
 
 ---

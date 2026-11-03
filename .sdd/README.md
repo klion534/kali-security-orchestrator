@@ -1,6 +1,8 @@
-# SDD Artifact Store
+# Historical SDD Artifact Store
 
-> Store de artefactos del pipeline **Spec-Driven Development**.
+> Archivo histórico del antiguo pipeline **Spec-Driven Development**.
+> El workflow activo del proyecto es ODD; las features nuevas viven en
+> `odd/tasks/<feature-name>.md`.
 > El código es un artefacto transitorio y derivado. **Esto** es lo durable.
 
 ## Estructura

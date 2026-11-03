@@ -14,9 +14,9 @@ El humano valida la intención. La IA produce el artefacto derivado.
 
 | | |
 |---|---|
-| **39 agentes** | 9 del pipeline SDD · 9 especialistas del curso · 14 de Gentle-AI · 7 built-in |
+| **39 agentes** | Agentes ODD · especialistas del curso · Gentle-AI · built-in |
 | **19 skills** | 9 construidas desde el curso · 8 de Gentle-AI · 2 externas |
-| **14 comandos** | `/sdd` `/sdd-new` `/sdd-ff` `/prompt` `/model` `/test-plan` `/security-review` `/ci` `/release` `/worktree` `/judgment-day` `/memory` … |
+| **14 comandos** | `/prompt` `/model` `/test-plan` `/security-review` `/ci` `/release` `/worktree` `/judgment-day` `/memory` … |
 | **2 MCP** | Engram (memoria persistente) · Context7 (documentación actual) |
 | **3 binarios** | `engram` 3.4.0 · `gentle-ai` 4.2.0 · `gga` 2.10.1 |
 | **3 workflows** | CI (lint→test→build) · Security Review con IA · Release Please con notas IA |
@@ -34,51 +34,24 @@ El humano valida la intención. La IA produce el artefacto derivado.
 
 ---
 
-## El pipeline SDD
+## Organic Driven Development (ODD)
 
 ```
-        ┌──────────┐
-        │  EXPLORE │  read-only: entender el codebase
-        └────┬─────┘
-             ▼
-        ┌──────────┐
-        │ PROPOSE  │  intención, alcance, no-objetivos, rollback
-        └────┬─────┘
-             ▼
-     ┌───────┴────────┐   ◄── PARALELO
-     ▼                ▼
-┌─────────┐     ┌──────────┐
-│  SPEC   │     │  DESIGN  │  requisitos+escenarios | arquitectura+ADRs
-└────┬────┘     └────┬─────┘
-     └───────┬────────┘
-             ▼
-        ┌──────────┐
-        │   TASKS   │  numeradas, por fases, con tests mapeados
-        └────┬─────┘
-             ▼
-        ┌──────────┐
-        │   APPLY   │  TDD: RED → GREEN → REFACTOR
-        └────┬─────┘
-             ▼
-        ┌──────────┐
-        │  VERIFY  │  ejecución real de tests + matriz de cumplimiento
-        └────┬─────┘
-             ▼
-        ┌──────────┐
-        │  ARCHIVE │  merge del delta al baseline, cierre del cambio
-        └──────────┘
+AUTORIZAR → EXPLORAR → RESOLVER INCERTIDUMBRES → CLASIFICAR
+     → REGISTRAR → IMPLEMENTAR → COMPROBAR → CERRAR
 ```
 
-Cuatro puertas Human-in-the-Loop: **G1** alcance, **G2** diseño, **G3** plan,
-**G4** merge.
+ODD mantiene inline el trabajo pequeño y entendido. Para trabajo sustancial crea
+un único documento `odd/tasks/<feature-name>.md` antes del primer cambio. Ese
+documento conserva las especificaciones, tareas, decisiones, evidencias y cierre.
 
 ---
 
 ## Uso diario
 
 ```bash
-# El comando principal
-/sdd <descripción del cambio>
+# Para trabajo sustancial: crear o continuar el documento ODD de la feature
+# odd/tasks/<feature-name>.md
 
 # Construir el prompt de cinco ejes antes de delegar
 /prompt <lo que querés que haga el modelo>
@@ -112,7 +85,7 @@ Los tres gates de CI son ejecutables en local, y son el mismo código:
 
 ```bash
 npm run lint     # valida JSON, JSONC, YAML, shell y frontmatter de skills
-npm test         # invariantes del store SDD
+npm test         # invariantes de los documentos ODD
 npm run build    # regenera docs/INDEX.md
 ```
 
@@ -125,7 +98,7 @@ npm run build    # regenera docs/INDEX.md
 ├── AGENTS.md                   Reglas del proyecto (<500 líneas)
 ├── opencode.jsonc              Config a nivel de proyecto
 ├── package.json                Los tres gates de CI
-├── .sdd/                       Store de artefactos SDD
+├── odd/                        Workflow ODD y documentos de features
 ├── .github/
 │   ├── workflows/              ci.yml · security-review.yml · release-please.yml
 │   ├── dependabot.yml
@@ -138,7 +111,7 @@ npm run build    # regenera docs/INDEX.md
 │   ├── verify-stack.sh         Auditoría read-only del stack completo
 │   ├── validate-config.mjs     El gate de lint
 │   └── build-docs.mjs          El gate de build
-├── tests/sdd-store.test.mjs    El gate de test
+├── tests/odd-workflow.test.mjs  El gate de test
 ├── release-please-config.json
 └── .release-please-manifest.json
 ```

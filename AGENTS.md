@@ -39,10 +39,11 @@ No es una metáfora: es el mecanismo de control del sistema.
 ### Antes de escribir código
 
 - **¿Es un cambio sustancial?** (capacidad nueva, refactor, arquitectura, fix
-  riesgoso) → pipeline SDD completo: `/sdd`.
-  **No lo es** (typo, one-liner, fix obvio) → inline, sin ceremonia.
-  El pipeline de nueve fases para un cambio de tres líneas entrena al equipo a
-  ignorar las puertas.
+  riesgoso) → workflow ODD con un documento en
+  `odd/tasks/<feature-name>.md` antes del primer cambio.
+  **No lo es** (typo, one-liner, fix obvio) → inline, sin artefacto durable.
+  ODD mantiene pequeño el trabajo que puede reanudarse desde la solicitud y el
+  diff.
 - **¿Entiendo el código afectado?** → si no, primero explorar.
 - **¿Existe ya un `AGENTS.md` o convención en el repo?** → es ley. Este archivo
   define el mínimo; el repo define el detalle.
@@ -117,9 +118,7 @@ Rol, Contexto, Tarea exacta, Restricciones, Formato de salida.
 
 | Comando | Qué hace |
 |---------|----------|
-| `/sdd` | Pipeline SDD completo con puertas HITL |
-| `/sdd-new` | Alta de un cambio: explore + propose |
-| `/sdd-ff` | Ejecuta todas las fases restantes sin detenerse |
+| ODD | Workflow proporcional para cambios pequeños y sustanciales |
 | `/prompt` | Construye el prompt de cinco ejes |
 | `/model` | Recomienda modelo: coste, latencia, privacidad, contexto |
 | `/test-plan` | Estrategia de tests por riesgo |
@@ -133,15 +132,13 @@ Rol, Contexto, Tarea exacta, Restricciones, Formato de salida.
 ## 8. Estructura de artefactos
 
 ```
-.sdd/
-├── registry.md          # índice de cambios y su fase
-├── specs/               # baseline mergeado, numeración estable
-├── changes/<name>/      # proposal, spec, design, tasks, verification
-└── archive/<name>/      # historial cerrado
+odd/
+├── README.md            # contrato operativo ODD
+└── tasks/<name>.md      # Specs, Tasks, Log y evidencia
 ```
 
-El baseline se numera de forma **estable**: `R7` significa lo mismo para
-siempre. Renumerar rompe todas las referencias históricas.
+`.sdd/` queda únicamente como histórico de la migración. El trabajo nuevo se
+documenta exclusivamente en `odd/tasks/<name>.md`.
 
 ## 9. Documentación
 

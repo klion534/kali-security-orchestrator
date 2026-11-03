@@ -139,7 +139,7 @@ fi
 # ---------------------------------------------------------------------------
 section "3. Subagentes"
 
-EXPECTED_AGENTS="sdd-orchestrator sdd-explore sdd-propose sdd-spec sdd-design sdd-tasks sdd-apply sdd-verify sdd-archive prompt-engineer context-engineer model-selector test-engineer security-reviewer ci-engineer release-engineer knowledge-curator git-worktree-guardian"
+EXPECTED_AGENTS="gentle-orchestrator gentle-ai-explore gentle-ai-worker gentle-ai-verify prompt-engineer context-engineer model-selector test-engineer security-reviewer ci-engineer release-engineer knowledge-curator git-worktree-guardian"
 
 if [ ! -s "$AGENT_FILE" ]; then
   bad "no se pudo listar los agentes"
@@ -158,7 +158,7 @@ fi
 # ---------------------------------------------------------------------------
 section "4. Skills"
 
-EXPECTED_SKILLS="sdd-workflow prompt-perfect context-engineering model-selection testing-strategy ci-cd-pipeline rag-knowledge-base git-worktrees veil-secrets judgment-day skill-registry"
+EXPECTED_SKILLS="prompt-perfect context-engineering model-selection testing-strategy ci-cd-pipeline rag-knowledge-base git-worktrees veil-secrets judgment-day skill-registry cognitive-doc-design work-unit-commits"
 
 if [ ! -s "$SKILL_FILE" ]; then
   bad "no se pudo listar las skills"
@@ -177,7 +177,7 @@ fi
 # ---------------------------------------------------------------------------
 section "5. Comandos"
 
-EXPECTED_COMMANDS="sdd sdd-new sdd-ff prompt model test-plan security-review ci release worktree judgment-day memory"
+EXPECTED_COMMANDS="prompt model test-plan security-review ci release worktree judgment-day memory"
 
 if [ ! -s "$CONFIG_FILE" ]; then
   warn "no se pudo volcar la config (los comandos no se pudieron verificar)"
@@ -248,7 +248,7 @@ for wf in ci.yml security-review.yml release-please.yml; do
   fi
 done
 
-for f in ".github/dependabot.yml" ".github/PULL_REQUEST_TEMPLATE.md" ".github/CODEOWNERS" "release-please-config.json" ".release-please-manifest.json" ".gga" ".env.example" ".gitignore" "AGENTS.md" ".sdd/registry.md" "nvim/veil.lua" "package.json" "package-lock.json" "scripts/validate-config.mjs" "scripts/build-docs.mjs" "tests/sdd-store.test.mjs" "opencode.jsonc"; do
+for f in ".github/dependabot.yml" ".github/PULL_REQUEST_TEMPLATE.md" ".github/CODEOWNERS" "release-please-config.json" ".release-please-manifest.json" ".gga" ".env.example" ".gitignore" "AGENTS.md" "odd/README.md" "odd/tasks/migrate-project-to-odd.md" "nvim/veil.lua" "package.json" "package-lock.json" "scripts/validate-config.mjs" "scripts/build-docs.mjs" "tests/odd-workflow.test.mjs" "opencode.jsonc"; do
   if [ -f "$ROOT/$f" ]; then
     ok "$f"
   else

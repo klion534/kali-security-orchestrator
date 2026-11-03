@@ -15,13 +15,13 @@
                                 │ gates, aprobaciones
 ┌───────────────────────────────┴──────────────────────────────────────┐
 │  CAPA 4 — ORQUESTACIÓN                                               │
-│  sdd-orchestrator (delegate-only) · gentle-orchestrator (ODD)       │
-│  HITL gates · DAG de fases · contratos de resultado                │
+│  gentle-orchestrator (ODD) · agentes especializados                │
+│  Autorización · documento de feature · contratos de resultado       │
 └───────────────────────────────▲──────────────────────────────────────┘
                                 │ briefs, contratos
 ┌───────────────────────────────┴──────────────────────────────────────┐
 │  CAPA 3 — EJECUCIÓN                                                 │
-│  39 agentes: 9 de pipeline SDD · 9 especialistas · review 4R · JD   │
+│  39 agentes: ODD · especialistas · review 4R · JD                   │
 │  Contexto fresco por subagente · Parallel writers en worktrees      │
 └───────────────────────────────▲──────────────────────────────────────┘
                                 │ reglas, conocimiento bajo demanda
@@ -95,36 +95,30 @@ La diferencia entre "funciona" y "está verificado".
 
 ---
 
-## El DAG del pipeline SDD
+## El ciclo de Organic Driven Development
 
 ```
-                          proposal
-                             │
-              ┌──────────────┴──────────────┐
-              ▼                             ▼
-           spec                          design          ← PARALELO
-   (requisitos + escenarios)   (arquitectura + ADRs)
-              │                             │
-              └──────────────┬──────────────┘
-                             ▼
-                          tasks
-              (checklist de implementación)
-                             │
-                             ▼
-                          apply
-                    (TDD: RED→GREEN→REFACTOR)
-                             │
-                             ▼
-                         verify
-              (ejecución real + matriz)
-                             │
-                             ▼
-                        archive
-                  (merge del delta, cierre)
+                     AUTORIZAR
+                         │
+                      EXPLORAR
+                         │
+              RESOLVER INCERTIDUMBRES
+                         │
+                      CLASIFICAR
+                         │
+                      REGISTRAR
+             odd/tasks/<feature-name>.md
+                         │
+                     IMPLEMENTAR
+                         │
+                      COMPROBAR
+                         │
+                        CERRAR
 ```
 
-Cada flecha es un **contrato**: el artefacto de la fase anterior es la entrada
-de la siguiente. La flecha doble ↔ indica paralelismo real.
+El documento de feature es el contrato recuperable. El trabajo pequeño no crea
+artefactos durables; el trabajo sustancial conserva Specs, Tasks, Log y evidencia
+en un único archivo.
 
 ---
 
@@ -132,8 +126,8 @@ de la siguiente. La flecha doble ↔ indica paralelismo real.
 
 | Capa |.Store | Fuente de verdad | Sobrevive |
 |------|-------|------------------|-----------|
-| **Disco** | `.sdd/changes/<name>/*.md` | **Sí** | Sí |
-| **Memoria** | Engram, `sdd/<name>/<type>` | No (es el índice) | Sí |
+| **Disco** | `odd/tasks/<name>.md` | **Sí** | Sí |
+| **Memoria** | Engram, `odd/<name>/tasks` | No (es el índice) | Sí |
 
 **Regla:** el archivo es la verdad, la memoria es el índice. Si discrepan, el
 archivo gana. Por eso la recuperación de contexto siempre termina leyendo el
@@ -180,10 +174,10 @@ es una denegación en la capa de permisos.
 
 | Agente | edit | write | bash | task |
 |--------|------|-------|------|------|
-| `sdd-orchestrator` | deny | deny | allow | solo `sdd-*` y especialistas |
-| `sdd-explore` | deny | deny | solo lectura | deny |
-| `sdd-verify` | deny | allow (el informe) | tests | deny |
-| `sdd-apply` | allow | allow | tests + git | deny |
+| `gentle-orchestrator` | deny | deny | allow | especialistas autorizados |
+| `gentle-ai-explore` | deny | deny | solo lectura | deny |
+| `gentle-ai-verify` | deny | allow (el log) | tests | deny |
+| `gentle-ai-worker` | allow | allow | tests + git | deny |
 | `security-reviewer` | deny | deny | solo lectura | deny |
 | `review-risk` / `readability` / `reliability` / `resilience` | deny | deny | deny | deny |
 | `jd-judge-a` / `jd-judge-b` | deny | deny | — | deny |
@@ -268,7 +262,7 @@ Las cinco. La capa 3 sola no alcanza: protege el stream, no el commit.
           └───────────────────┘  └────────┬─────────────────┘
                                 no        │ sí
             ┌───────────────────────┐     ▼
-            │ sdd-explore           │  ┌──────────────────────────┐
+            │ gentle-ai-explore     │  ┌──────────────────────────┐
             └───────────────────────┘  │ ¿Hay dos Writers en      │
                                         │ paralelo?               │
                                         └───────┬──────────┬───────┘
@@ -276,8 +270,8 @@ Las cinco. La capa 3 sola no alcanza: protege el stream, no el commit.
                           ┌────────────────────┘          ▼
                           ▼                    ┌──────────────────────┐
               ┌───────────────────────┐        │ git-worktree-guardian│
-              │ Pipeline SDD completo │        └──────────────────────┘
-              │ con gates HITL        │
+              │ Documento ODD        │        └──────────────────────┘
+              │ + tareas verificables │
               └───────────────────────┘
 ```
 
@@ -290,7 +284,7 @@ Las cinco. La capa 3 sola no alcanza: protege el stream, no el commit.
 ```
 opencode.jsonc          Config: MCP, agentes, permisos, plugins
 AGENTS.md               System prompt global (persona + protocolo Engram)
-agent/                  18 subagentes markdown (9 SDD + 9 especialistas)
+agent/                  agentes ODD y especialistas markdown
 skills/                 19 skills (10 del curso + 9 de Gentle-AI)
 commands/               14 comandos slash
 plugins/engram.ts       Plugin de Engram (tracking + compaction recovery)
@@ -302,7 +296,7 @@ tui.json                Registro del plugin de statusline
 
 ```
 AGENTS.md               Reglas del proyecto (<500 líneas)
-.sdd/                   Store de artefactos SDD
+odd/                    Documentos de features ODD
 .github/workflows/      ci.yml · security-review.yml · release-please.yml
 .github/                dependabot · PR template · CODEOWNERS
 docs/                   PLAYBOOK · ARQUITECTURA · CATALOGO · OPERATIVO

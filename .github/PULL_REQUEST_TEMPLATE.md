@@ -8,13 +8,13 @@
 
 <!-- El problema que resuelve, o la decisión que toma. -->
 
-## Relación con el spec
+## Relación con la feature ODD
 
 <!--
-Si el cambio viene del pipeline SDD, referencia el cambio y los requisitos:
-  Cambio: .sdd/changes/<nombre>/spec.md
-  Requisitos cubiertos: R1, R4
-Si no viene de un spec, escribe "N/A — cambio directo".
+Referencia el documento ODD de la feature y las specs cubiertas:
+  Feature: odd/tasks/<nombre>.md
+  Specs cubiertas: S1, S4
+Si el cambio es pequeño y no requiere documento, escribe "N/A — cambio inline".
 -->
 
 ## Tipo de cambio

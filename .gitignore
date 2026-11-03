@@ -16,11 +16,6 @@ secrets.yml
 # --- Agent worktrees -----------------------------------------------------
 .worktrees/
 
-# --- SDD working state ---------------------------------------------------
-# The baseline and the archive are tracked. In-flight changes are not:
-# they are work in progress, not history.
-.sdd/changes/
-
 # --- Node ----------------------------------------------------------------
 node_modules/
 npm-debug.log*

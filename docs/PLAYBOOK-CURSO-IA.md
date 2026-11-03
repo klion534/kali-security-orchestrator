@@ -1,5 +1,9 @@
 # Playbook — Desarrollo con IA: De 0 a Producción
 
+> **Nota operativa:** este documento conserva material histórico y formativo
+> del curso, incluida la explicación de SDD. El workflow operativo actual de
+> este repositorio es ODD y está definido en `AGENTS.md` y `odd/README.md`.
+
 > Síntesis operativa de las tres clases del curso **Desarrollo con IA: De 0 a
 > Producción** (Gentleman Programming), aplicada a este repositorio.
 >
