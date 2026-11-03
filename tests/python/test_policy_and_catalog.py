@@ -1,11 +1,15 @@
 import sys
+import json
+import subprocess
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from kali_orchestrator.catalog import build_default_catalog
+from kali_orchestrator.config import ConfigError, load_config
 from kali_orchestrator.policy import AuthorizationError, ExecutionPolicy, TargetScope
 
 
@@ -61,6 +65,72 @@ class CatalogTests(unittest.TestCase):
 
         self.assertIn(tool.availability(), {"installed", "not-installed"})
         self.assertEqual(tool.status(), "available" if tool.is_installed() else "not-installed")
+
+
+class ConfigAndCliTests(unittest.TestCase):
+    def test_loads_and_validates_safe_plan(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "audit.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "scope": {"domains": ["example.test"]},
+                        "profile": "safe-web",
+                        "targets": ["https://example.test"],
+                        "tools": ["nmap", "nuclei"],
+                    }
+                )
+            )
+
+            config = load_config(path)
+
+        self.assertEqual(config.profile, "safe-web")
+        self.assertEqual(config.tools, ("nmap", "nuclei"))
+
+    def test_rejects_active_plan_without_authorization(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "audit.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "scope": {"domains": ["example.test"]},
+                        "profile": "active",
+                        "targets": ["example.test"],
+                        "tools": ["sqlmap"],
+                    }
+                )
+            )
+
+            with self.assertRaises(ConfigError):
+                load_config(path)
+
+    def test_cli_plan_is_dry_and_reports_tool_status(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "audit.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "scope": {"domains": ["example.test"]},
+                        "profile": "safe-web",
+                        "targets": ["example.test"],
+                        "tools": ["nmap"],
+                    }
+                )
+            )
+            result = subprocess.run(
+                [sys.executable, "-m", "kali_orchestrator", "plan", "--config", str(path)],
+                cwd=ROOT,
+                env={**dict(), "PYTHONPATH": str(ROOT / "src")},
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        plan = json.loads(result.stdout)
+        self.assertTrue(plan["dry_run"])
+        self.assertEqual(plan["targets"], ["example.test"])
+        self.assertEqual(plan["tools"][0]["name"], "nmap")
 
 
 if __name__ == "__main__":

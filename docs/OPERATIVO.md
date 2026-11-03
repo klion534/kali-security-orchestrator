@@ -42,6 +42,27 @@ install -m 0755 /tmp/engram /usr/local/bin/engram
 
 ## 2. El bucle de trabajo
 
+### 2.0 Orquestador Kali en VirtualBox
+
+La ejecución real de herramientas ocurre dentro de la VM Kali Linux. En macOS
+se ejecutan solamente tests y validaciones del núcleo.
+
+```bash
+cd ~/kali-security-orchestrator
+source .venv/bin/activate
+
+# Diagnóstico de herramientas instaladas en Kali
+PYTHONPATH=src python3 -m kali_orchestrator doctor
+
+# Validar y mostrar un plan sin ejecutar herramientas
+PYTHONPATH=src python3 -m kali_orchestrator plan \
+  --config examples/audit.safe-web.json
+```
+
+El ejemplo usa `example.test` deliberadamente. Sustituilo solo por dominios,
+IPs o redes propios y autorizados. La CLI actual es exclusivamente de
+planificación: siempre devuelve `dry_run: true`.
+
 ### 2.1 Cambio trivial (typo, un-liner, fix obvio)
 
 ```

@@ -7,6 +7,7 @@
 - **Workflow**: Organic Driven Development (ODD)
 - **Alcance**: Orquestar herramientas defensivas de auditoría, normalizar evidencias y generar informes.
 - **Implementación prevista**: Python 3.11+ para ejecución en Kali Linux.
+- **Entorno de ejecución**: máquina virtual Kali Linux sobre VirtualBox; macOS solo se usa para desarrollo y tests locales.
 - **Entrega**: CLI modular, perfiles declarativos y adaptadores aislados.
 
 ## Specs
@@ -91,7 +92,7 @@ herramientas externas instaladas.
 
 - [x] T1 — Explorar el entorno Kali esperado y fijar contratos CLI, configuración y salida.
 - [x] T2 — Diseñar el modelo de catálogo, perfiles, alcance, ejecución y evidencia.
-- [ ] T3 — Implementar CLI, configuración validada y políticas de seguridad.
+- [x] T3 — Implementar CLI, configuración validada y políticas de seguridad.
 - [ ] T4 — Implementar runner aislado con timeouts, cancelación y redacción.
 - [ ] T5 — Implementar catálogo y adaptadores de la primera cobertura.
 - [ ] T6 — Implementar parsers, normalización y almacenamiento de evidencias.
@@ -145,3 +146,22 @@ herramientas externas instaladas.
 - `tests/python/test_policy_and_catalog.py`: 6 tests unitarios; se observó RED
   antes de implementar (`ModuleNotFoundError`) y GREEN después.
 - `npm test`: 6 tests Node y 6 tests Python pasaron.
+
+### L6 — Entorno objetivo confirmado
+
+- La ejecución real del catálogo y de los adaptadores ocurrirá en una máquina
+  virtual Kali Linux administrada con VirtualBox.
+- El entorno macOS no debe instalar ni ejecutar herramientas de pentesting; solo
+  valida políticas, catálogo, parsers, informes y ejecutables simulados.
+- La detección `installed` / `not-installed` es intencional para permitir el
+  mismo código en desarrollo y en Kali, donde se instalarán las herramientas
+  autorizadas.
+
+### L7 — CLI de planificación
+
+- `python3 -m kali_orchestrator doctor` informa disponibilidad sin ejecutar
+  herramientas de auditoría.
+- `python3 -m kali_orchestrator plan --config examples/audit.safe-web.json`
+  valida el alcance, perfil y catálogo, y siempre devuelve `dry_run: true`.
+- La CLI todavía no ejecuta comandos externos; esa capacidad pertenece a T4 y
+  requiere runner, timeouts, cancelación y redacción.

@@ -1,0 +1,11 @@
+{
+  "scope": {
+    "domains": ["example.test"],
+    "networks": []
+  },
+  "profile": "safe-web",
+  "authorized": false,
+  "targets": ["https://example.test"],
+  "tools": ["nmap", "nuclei", "owasp-zap"],
+  "output_dir": "artifacts"
+}
